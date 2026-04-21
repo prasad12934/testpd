@@ -2,7 +2,7 @@ pipeline {
 agent any
 
 tools {
-    maven 'Maven3'   // ✅ FIXED (must match Jenkins Global Tool Configuration)
+    maven 'Maven3'
 }
 
 stages {
@@ -15,7 +15,7 @@ stages {
 
     stage('Build') {
         steps {
-            sh 'mvn clean package -DskipTests'
+            bat 'mvn clean package -DskipTests'
         }
     }
 
@@ -26,11 +26,11 @@ stages {
                 usernameVariable: 'ANYPOINT_USER',
                 passwordVariable: 'ANYPOINT_PASS'
             )]) {
-                sh '''
-                    mvn deploy \
-                        -DskipTests \
-                        -Duser=${ANYPOINT_USER} \
-                        -Dpass=${ANYPOINT_PASS}
+                bat '''
+                    mvn deploy ^
+                        -DskipTests ^
+                        -Duser=%ANYPOINT_USER% ^
+                        -Dpass=%ANYPOINT_PASS%
                 '''
             }
         }
@@ -43,11 +43,11 @@ stages {
                 usernameVariable: 'ANYPOINT_USER',
                 passwordVariable: 'ANYPOINT_PASS'
             )]) {
-                sh '''
-                    mvn mule:deploy \
-                        -DmuleDeploy \
-                        -Duser=${ANYPOINT_USER} \
-                        -Dpass=${ANYPOINT_PASS} \
+                bat '''
+                    mvn mule:deploy ^
+                        -DmuleDeploy ^
+                        -Duser=%ANYPOINT_USER% ^
+                        -Dpass=%ANYPOINT_PASS% ^
                         -DapplicationName=test-p-d-d-jenkins
                 '''
             }
@@ -57,10 +57,10 @@ stages {
 
 post {
     success {
-        echo '✅ BUILD SUCCESS — App published to Exchange and deployed to CloudHub 2.0!'
+        echo 'BUILD SUCCESS — deployed to CloudHub 2.0'
     }
     failure {
-        echo '❌ BUILD FAILED — Check the stage logs above for details.'
+        echo 'BUILD FAILED — check logs'
     }
 }
 
