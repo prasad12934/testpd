@@ -21,26 +21,15 @@ stages {
                 passwordVariable: 'ANYPOINT_PASS'
             )]) {
                 writeFile file: 'settings.xml', text: """
-```
-
-<settings>
-  <servers>
-    <server>
-      <id>Repository</id>
-      <username>${ANYPOINT_USER}</username>
-      <password>${ANYPOINT_PASS}</password>
-    </server>
-  </servers>
-</settings>
-"""
-                }
-            }
-        }
-
-```
     stage('Build & Publish to Exchange') {
         steps {
-            bat 'mvn clean deploy -s settings.xml -DskipTests -Duser=%ANYPOINT_USER% -Dpass=%ANYPOINT_PASS%'
+            withCredentials([usernamePassword(
+                credentialsId: 'anypoint-creds',
+                usernameVariable: 'ANYPOINT_USER',
+                passwordVariable: 'ANYPOINT_PASS'
+            )]) {
+                bat 'mvn clean deploy -s settings.xml -DskipTests -Duser=%ANYPOINT_USER% -Dpass=%ANYPOINT_PASS%'
+            }
         }
     }
 
@@ -71,5 +60,4 @@ post {
         echo 'BUILD FAILED — check logs'
     }
 }
-
 }
