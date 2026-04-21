@@ -13,26 +13,34 @@ stages {
         }
     }
 
-    stage('Build') {
-        steps {
-            bat 'mvn clean package -DskipTests'
-        }
-    }
-
-    stage('Publish to Exchange') {
+    stage('Prepare settings.xml') {
         steps {
             withCredentials([usernamePassword(
                 credentialsId: 'anypoint-creds',
                 usernameVariable: 'ANYPOINT_USER',
                 passwordVariable: 'ANYPOINT_PASS'
             )]) {
-                bat '''
-                    mvn deploy ^
-                        -DskipTests ^
-                        -Duser=%ANYPOINT_USER% ^
-                        -Dpass=%ANYPOINT_PASS%
-                '''
+                writeFile file: 'settings.xml', text: """
+```
+
+<settings>
+  <servers>
+    <server>
+      <id>Repository</id>
+      <username>${ANYPOINT_USER}</username>
+      <password>${ANYPOINT_PASS}</password>
+    </server>
+  </servers>
+</settings>
+"""
+                }
             }
+        }
+
+```
+    stage('Build & Publish to Exchange') {
+        steps {
+            bat 'mvn clean deploy -s settings.xml -DskipTests -Duser=%ANYPOINT_USER% -Dpass=%ANYPOINT_PASS%'
         }
     }
 
@@ -57,7 +65,7 @@ stages {
 
 post {
     success {
-        echo 'BUILD SUCCESS — deployed to CloudHub 2.0'
+        echo 'BUILD SUCCESS — Exchange + CloudHub deployment completed'
     }
     failure {
         echo 'BUILD FAILED — check logs'
