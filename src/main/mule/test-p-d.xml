@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="efbb813c-928e-4fef-a6fe-28d4a246721b" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="test-p-dFlow" doc:id="932dd4e5-f09e-43af-a246-1f48a7a14606" >
+		<http:listener doc:name="Listener" doc:id="3380a7c2-1bc4-488a-a4f7-ff5412ae651d" config-ref="HTTP_Listener_config" path="/testtwo"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b5fc1f42-bfc8-40b6-bc96-eae6403d1ec6" message="input payload #[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="3dd42e8d-d709-4927-be9e-305110d8ad70" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="2c4cd174-7284-4ca5-a916-451263b6609d" message="output payload #[payload]"/>
+	</flow>
+</mule>
