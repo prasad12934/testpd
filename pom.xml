@@ -72,7 +72,7 @@
 	<!-- ✅ ADDED: Distribution Management to point Maven to Exchange -->
 	<distributionManagement>
 		<repository>
-			<id>Repository</id>
+			<id>exchange</id>
 			<name>Corporate Repository</name>
 			<url>https://maven.anypoint.mulesoft.com/api/v3/organizations/7f1e9068-1c0f-4468-90cd-ec2484c3569a/maven</url>
 			<layout>default</layout>
