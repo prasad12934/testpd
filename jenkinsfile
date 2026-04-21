@@ -29,7 +29,7 @@ stages {
 <settings>
   <servers>
     <server>
-      <id>Repository</id>
+      <id>exchange</id>
       <username>${ANYPOINT_USER}</username>
       <password>${ANYPOINT_PASS}</password>
     </server>
