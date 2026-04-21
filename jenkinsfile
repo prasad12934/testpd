@@ -1,6 +1,7 @@
 pipeline {
 agent any
 
+
 tools {
     maven 'Maven3'
 }
@@ -13,51 +14,54 @@ stages {
         }
     }
 
-    stage('Prepare settings.xml') {
+    stage('Build & Deploy') {
         steps {
             withCredentials([usernamePassword(
                 credentialsId: 'anypoint-creds',
                 usernameVariable: 'ANYPOINT_USER',
                 passwordVariable: 'ANYPOINT_PASS'
             )]) {
-                writeFile file: 'settings.xml', text: """
-    stage('Build & Publish to Exchange') {
-        steps {
-            withCredentials([usernamePassword(
-                credentialsId: 'anypoint-creds',
-                usernameVariable: 'ANYPOINT_USER',
-                passwordVariable: 'ANYPOINT_PASS'
-            )]) {
-                bat 'mvn clean deploy -s settings.xml -DskipTests -Duser=%ANYPOINT_USER% -Dpass=%ANYPOINT_PASS%'
-            }
-        }
-    }
 
-    stage('Deploy to CloudHub 2.0') {
-        steps {
-            withCredentials([usernamePassword(
-                credentialsId: 'anypoint-creds',
-                usernameVariable: 'ANYPOINT_USER',
-                passwordVariable: 'ANYPOINT_PASS'
-            )]) {
-                bat '''
-                    mvn mule:deploy ^
-                        -DmuleDeploy ^
+                // Create settings.xml
+                writeFile file: 'settings.xml', text: """
+
+
+<settings>
+  <servers>
+    <server>
+      <id>Repository</id>
+      <username>${ANYPOINT_USER}</username>
+      <password>${ANYPOINT_PASS}</password>
+    </server>
+  </servers>
+</settings>
+"""
+
+
+                // Build + Publish + Deploy
+                bat """
+                    mvn clean deploy mule:deploy -s settings.xml ^
+                        -DskipTests ^
                         -Duser=%ANYPOINT_USER% ^
                         -Dpass=%ANYPOINT_PASS% ^
                         -DapplicationName=test-p-d-d-jenkins
-                '''
+                """
             }
         }
     }
 }
 
 post {
+    always {
+        bat 'del settings.xml'
+    }
     success {
-        echo 'BUILD SUCCESS — Exchange + CloudHub deployment completed'
+        echo 'Deployment Successful'
     }
     failure {
-        echo 'BUILD FAILED — check logs'
+        echo 'Deployment Failed'
     }
 }
+
+
 }
