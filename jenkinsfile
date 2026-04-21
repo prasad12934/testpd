@@ -1,66 +1,69 @@
 pipeline {
-    agent any
+agent any
 
-    tools {
-        maven 'Maven'
+```
+tools {
+    maven 'Maven3'   // ✅ FIXED (must match Jenkins Global Tool Configuration)
+}
+
+stages {
+
+    stage('Checkout') {
+        steps {
+            checkout scm
+        }
     }
 
-    stages {
-
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
+    stage('Build') {
+        steps {
+            sh 'mvn clean package -DskipTests'
         }
+    }
 
-        stage('Build') {
-            steps {
-                sh 'mvn clean package -DskipTests'
-            }
-        }
-
-        stage('Publish to Exchange') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'anypoint-creds',  // ✅ NO CHANGE — uses your Jenkins credential
-                    usernameVariable: 'ANYPOINT_USER',
-                    passwordVariable: 'ANYPOINT_PASS'
-                )]) {
-                    sh '''
-                        mvn deploy \
-                            -DskipTests \
-                            -Duser=${ANYPOINT_USER} \
-                            -Dpass=${ANYPOINT_PASS}
-                    '''
-                }
-            }
-        }
-
-        stage('Deploy to CloudHub 2.0') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'anypoint-creds',  // ✅ NO CHANGE — uses your Jenkins credential
-                    usernameVariable: 'ANYPOINT_USER',
-                    passwordVariable: 'ANYPOINT_PASS'
-                )]) {
-                    sh '''
-                        mvn mule:deploy \
-                            -DmuleDeploy \
-                            -Duser=${ANYPOINT_USER} \
-                            -Dpass=${ANYPOINT_PASS} \
-                            -DapplicationName=test-p-d-d-jenkins  // ✅ ONLY CHANGE THIS
-                    '''
-                }
+    stage('Publish to Exchange') {
+        steps {
+            withCredentials([usernamePassword(
+                credentialsId: 'anypoint-creds',
+                usernameVariable: 'ANYPOINT_USER',
+                passwordVariable: 'ANYPOINT_PASS'
+            )]) {
+                sh '''
+                    mvn deploy \
+                        -DskipTests \
+                        -Duser=${ANYPOINT_USER} \
+                        -Dpass=${ANYPOINT_PASS}
+                '''
             }
         }
     }
 
-    post {
-        success {
-            echo '✅ BUILD SUCCESS — App published to Exchange and deployed to CloudHub 2.0!'
-        }
-        failure {
-            echo '❌ BUILD FAILED — Check the stage logs above for details.'
+    stage('Deploy to CloudHub 2.0') {
+        steps {
+            withCredentials([usernamePassword(
+                credentialsId: 'anypoint-creds',
+                usernameVariable: 'ANYPOINT_USER',
+                passwordVariable: 'ANYPOINT_PASS'
+            )]) {
+                sh '''
+                    mvn mule:deploy \
+                        -DmuleDeploy \
+                        -Duser=${ANYPOINT_USER} \
+                        -Dpass=${ANYPOINT_PASS} \
+                        -DapplicationName=test-p-d-d-jenkins
+                '''
+            }
         }
     }
+}
+
+post {
+    success {
+        echo '✅ BUILD SUCCESS — App published to Exchange and deployed to CloudHub 2.0!'
+    }
+    failure {
+        echo '❌ BUILD FAILED — Check the stage logs above for details.'
+    }
+}
+```
+
 }
